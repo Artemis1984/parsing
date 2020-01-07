@@ -1,5 +1,8 @@
 import requests
 from bs4 import BeautifulSoup as Bs
+from pprint import pprint
+from pymongo import MongoClient
+import time
 
 # 1) Необходимо собрать информацию о вакансиях на вводимую должность (используем input или
 # через аргументы) с сайта superjob.ru и hh.ru. Приложение должно анализировать несколько страниц
@@ -23,6 +26,7 @@ name = 'HeadHunter'
 vacancy = input('Введите вакансию: ').replace(' ', '+').replace('+', '%2B').replace('#', '%23')
 page_button = True
 page = 0
+HH_list = []
 while page_button:
 
     main_link = 'https://hh.ru/search/vacancy?L_is_autosearch=false&area=1&clusters=' \
@@ -38,22 +42,78 @@ while page_button:
 
     for item in range(len(page_list)):
 
+        sal_min, sal_max = 'Nan', 'Nan'
+
+        temp_dict = {'Компания': '',
+                     'Вакансия': '',
+                     'От': '',
+                     'До': '',
+                     'Ссылка': ''}
+
         salary = page_list[item].find('div', {'class': 'vacancy-serp-item__compensation'})
 
         if salary:
-            salary = salary.getText()
+
+            sal_text = salary.getText().replace('\xa0', '').replace('руб.', '').replace('EUR', '').replace('USD', '').replace(' ', '')
+            if '-' in sal_text:
+                sal_min = int(sal_text[:sal_text.index('-')])
+                sal_max = int(sal_text[sal_text.index('-') + 1:])
+
+            if 'от' in sal_text:
+
+                if 'до' in sal_text:
+                    sal_min = int(sal_text[2:sal_text.index('до')])
+                else:
+                    sal_min = int(sal_text[2:])
+
+            if 'до' in sal_text:
+                sal_max = int(sal_text[sal_text.index('до') + 2:])
+
         else:
-            salary = 'по договоренности'
+            sal_min, sal_max = 'Nan', 'Nan'
 
         vac_link = page_list[item].find('a', {'class': 'bloko-link HH-LinkModifier'})
 
         vac_name = page_list[item].find('a', {'class': 'bloko-link HH-LinkModifier'}).getText()
-        print(name, vac_link['href'], vac_name, salary, sep='\n')
-        print('='*50)
 
-        page_button = html_response.find('div', {'class': 'bloko-gap bloko-gap_top'}). \
-            findChildren('a', {'class': 'bloko-button HH-Pager-Controls-Next HH-Pager-Control'})
+        temp_dict['Компания'] = name
+        temp_dict['Вакансия'] = vac_name
+        temp_dict['Ссылка'] = vac_link['href']
+
+        temp_dict['От'] = sal_min
+        temp_dict['До'] = sal_max
+
+        HH_list.append(temp_dict)
+
+        page_button = html_response.find('a', {'data-qa': 'pager-next'})
+
+    if len(HH_list) == 0:
+        print('Ничего не найдено!')
+        page_button = False
 
     if page_button:
         page += 1
+
+
+if len(HH_list) == 0:
+    pass
+
+else:
+
+    client = MongoClient('localhost', 27017)
+    db = client['HeadHunter']
+    HeadHunter = db.HeadHunter
+    HeadHunter.insert_many(HH_list)
+
+    # over = int(input('Больше: '))
+    #
+    # for i in HeadHunter.find({'$or': [{'От': {'$gt': over}}, {'До': {'$gt': over}}]}):
+    #
+    #     pprint(i)
+
+    for i in HeadHunter.find():
+        pprint(i)
+
+    print(HeadHunter.count_documents({}))
+    HeadHunter.delete_many({})
 
