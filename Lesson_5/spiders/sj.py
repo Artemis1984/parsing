@@ -65,7 +65,7 @@ class  sj_Spider(scrapy.Spider):
                          'Ссылка': links[i],
                          'От': sal_min,
                          'До': sal_max,
-                         'Источник': 'SuperJob'}
+                         'Источник': sj_Spider.name}
 
             pprint(temp_dict)
 

@@ -71,7 +71,7 @@ class hh_Spider(scrapy.Spider):
                          'Ссылка': links[i],
                          'От': sal_min,
                          'До': sal_max,
-                         'Источник': 'HeadHunter'}
+                         'Источник': hh_Spider.name}
 
             hh_Spider.hh.update({'Ссылка': temp_dict['Ссылка']}, {'$set': temp_dict}, upsert=True)
 
