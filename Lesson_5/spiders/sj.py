@@ -7,7 +7,7 @@ from pymongo import MongoClient
 class  sj_Spider(scrapy.Spider):
 
     name = 'SuperJob'
-    a = input('Вакансия: SuperJob ')
+    a = input('Вакансия: SuperJob ').replace(' ', '+').replace('+', '%2B').replace('#', '%23')
     start_urls = ['https://www.superjob.ru/vacancy/search/?keywords=' + a + '&page=1']
     allowed_domains = ['superjob.ru']
 

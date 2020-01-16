@@ -4,6 +4,8 @@ from Lesson_5 import setings
 from Lesson_5.spiders.hh import hh_Spider
 from Lesson_5.spiders.sj import sj_Spider
 
+
+
 if __name__ == '__main__':
 
     crawler_settings = Settings()
@@ -12,6 +14,8 @@ if __name__ == '__main__':
     process.crawl(hh_Spider)
     process.crawl(sj_Spider)
     process.start()
+    process.start()
+
 
 
 

@@ -7,7 +7,7 @@ from pymongo import MongoClient
 class hh_Spider(scrapy.Spider):
 
     name = 'HeadHunter'
-    a = input('Вакансия: HeadHunter')
+    a = input('Вакансия: HeadHunter').replace(' ', '+').replace('+', '%2B').replace('#', '%23')
     start_urls = ['https://hh.ru/search/vacancy?clusters=true&area=1&enable_snippets=true&salary=&st=searchVacancy&text=' + a + '&page=0']
     allowed_domains = ['hh.ru']
 
