@@ -8,7 +8,12 @@ class HhSpider(scrapy.Spider):
 
     name = 'HeadHunter'
     allowed_domains = ['hh.ru']
-    start_urls = ['https://hh.ru/search/vacancy?area=1&st=searchVacancy&text=python']
+    start_urls = ['https://hh.ru/search/vacancy?area=1&st=searchVacancy&text=']
+
+    def __init__(self, section):
+
+        super(HhSpider, self).__init__()
+        self.start_urls = [f'https://hh.ru/search/vacancy?area=1&st=searchVacancy&text={section}&page=0']
 
     def parse(self, response: HtmlResponse):
 
@@ -22,9 +27,6 @@ class HhSpider(scrapy.Spider):
         yield JobparserItem(name=names, link=links, salary=salary)
 
         next_page_link = response.xpath("//a[@class='bloko-button HH-Pager-Controls-Next HH-Pager-Control']/@href").extract_first()
-
-
-
 
         yield response.follow(next_page_link, callback=self.parse)
 
